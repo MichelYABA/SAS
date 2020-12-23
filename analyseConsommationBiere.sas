@@ -102,7 +102,7 @@ run;
 	
 */
 
-/* Question 5 partie a */ 
+/* calcul de la fréquence de consommation du cognac selon le sexe */ 
 PROC FREQ data=projet.biere_2;
 TABLES R2_*Cognac;
 run;
@@ -116,7 +116,7 @@ run;
 Du coup les hommes consomment plus de cognac que les femmes.
 */
 
-/* Question 5 partie b */
+/* Fréquence de consommation de Cognac selon la classe d'âge*/
 PROC FREQ data=projet.biere_2;
 TABLES Cognac*ClassAge;
 run;
@@ -135,9 +135,6 @@ Les 50-65 en consommes plus.
 proc freq data=projet.biere_2;
 tables Cognac*ClassAge / chisq ;
 run;
-
-
-/* PARTIE B */
 
 PROC FORMAT;
 VALUE LOS
@@ -202,8 +199,6 @@ on constate que la valeur propre est supérieur à 1 quand le nombre de facteurs
 /* Pour choisir les NFacteur on le critère du coude, dans notre PCA Nous une chute importante jusqu'a 4 puis la courbe se stabilise 
 Nous avons donc choisis 4 facteurs
 */
-
-/* Question 3 */
 
 proc factor data = projet.biere_3 outstat=projet.stat_pca out = projet.table_pca_par6 nfactors = 6 corr scree ev rotate = varimax method = prin priors = smc plot=all;
 VAR ia1_2 ia1_3 ia1_4 ia1_5 ia1_6 ia1_7 ia1_8 ia1_9 ia1_10 ia1_11 ia1_15 ia1_17 ia1_18 ia1_19 ia1_21 ia1_22 
@@ -292,7 +287,7 @@ D'après l'analyse précédente,
 */
 
 
-/* Question 4  Rénommage*/ 
+/* Renommage des différents facteurs en fonction des variables qui y sont projetées*/ 
 data projet.pca;
 set projet.stat_pca(rename=(_Name_ = Name));
 if Name = "Factor1" then Name = "cognac_xo";
@@ -303,7 +298,7 @@ if Name = "Factor5" then Name = "whisky";
 if Name = "Factor6" then Name = "rum";
 run;
 
-/* Question 5 */ 
+/* Calcul des probabilités des facteurs */ 
 
 data projet.bierebis;
 set projet.biere_3;
@@ -316,7 +311,7 @@ Proba_F6 = ia1_31;
 run;
 
 
-/*6. Appliquer un label à ces facteurs en fonction du nom donné ci-dessus.*/
+/*Application d'un label à ces facteurs en fonction du nom donné ci-dessus.*/
 PROC CONTENTS DATA=projet.bierebis;
 RUN;
 /*La procédure Contents nous permet d'avoir les informations sur une table
@@ -337,8 +332,8 @@ RUN;
 PROC CONTENTS DATA=projet.bierebis;
 RUN;
 
-/*7. Calculer les moyennes des variables Proba_F1 à Proba_F6 selon le sexe et la classe
-d’âge (créée à l’exercice A3) – Commenter*/
+/*Calcul des moyennes des variables Proba_F1 à Proba_F6 selon le sexe et la classe
+d’âge (créée à l’exercice A3)*/
 
 proc means data=projet.bierebis mean;
 var Proba_F1 Proba_F2 Proba_F3 Proba_F4 Proba_F5 Proba_F6;
@@ -360,9 +355,7 @@ L'analyse des moyennes nous permet de déduire que :
 */
 
 
-/*Partie C */ 
-
-/*Question 1 */
+/*Application de la CAH par la méthode WARd et affichage du dendogramme*/
 PROC CLUSTER data=projet.bierebis method=WARD outtree=projet.TREE PLOTS(MAXPOINTS=300);
 VAR PROBA_F1 Proba_F2 Proba_F3 Proba_F4 Proba_F5 Proba_F6;
 ID NUQ;
@@ -381,12 +374,11 @@ Nous avons donc des classes plus homogène mais l'inertie entre les classe soit 
 ce qui nous donne donc 4 classes
 */
 
-/* Question 3 */ 
 /*PROC VARCLUS DATA=projet.bierebis minclusters=5 maxclusters=5
 hierarchy outstat=projet.stat_hierarchy outtree=tree2;
 run;
 */
-/*a. Calculez l’effectif des classes*/
+/*Calcul de l’effectif des classes*/
  
 proc tree data=projet.TREE out=projet.tree2 nclusters=5  noprint;
 run;
@@ -396,24 +388,19 @@ table clusname ;
 run ;
 
 /*
-b. Descriptif des classes en termes de variables qui ont construit les classes (les
-variables Proba_F1 à Proba_F6)
+Descriptif des classes en termes de variables qui ont construit les classes (les variables Proba_F1 à Proba_F6)
 */
 proc varclus data=projet.bierebis maxclusters=5;
    var PROBA_F1-Proba_F6;
 run;
 
 /*
-c. Descriptif des classes en termes de sexe, classe d’âge et de consommation de
-vins spiritueux (question R5).
+Descriptif des classes en termes de sexe, classe d’âge et de consommation de vins spiritueux (question R5).
 */
 proc varclus data=projet.bierebis maxclusters=5;
    var r2_  r5_ r3; /*L'utilisation de la variable classAge ne marche pas*/
 run;
 
-/*d.*/
-
-/*i.*/ 
 /*
 En supposant que les 3 indicatrices correspondent aux variables 
  - us5a_1 pour « Pure, no ice »
@@ -429,6 +416,7 @@ Avec : - ind1 pour indicateur de us5a_1
  	   - ind2 pour indicateur de us5a_2
  	   - ind3 pour indicateur de us5a_3
 */
+
 data projet.bierebis;
 set projet.bierebis;
 if us5a_1 = "4" | us5a_1 = "5" then ind1=1; else ind1=0;
@@ -436,12 +424,12 @@ if us5a_2 = "4" | us5a_2 = "5" then ind2=1; else ind2=0;
 if us5a_3 = "4" | us5a_3 = "5" then ind3=1; else ind3=0;
 run;
 
-/*ii. Caractériser les 5 classes avec ces 3 nouvelles variables.*/
+/*Caractéristique des 5 classes avec ces 3 nouvelles variables.*/
 proc varclus data=projet.bierebis maxclusters=5;
    var ind1 ind2 ind3; 
 run;
 
-/*D. Régression logistique.*/
+/*Application de la Régression logistique sur la classe5 pour savoir l'appartenance de chacune*/
 
 data projet.bierebis;
 set projet.bierebis;
@@ -449,7 +437,6 @@ if ind1=1 & ind2=1 & ind3=1 then classe5 = 1;
 else classe5 = 0;
 run;
 
-/*D. Régression logistique.*/
 proc logistic data=projet.bierebis descending;
  	class classAge; /*Variable catégorielle*/
 	model classe5 = r2_ classAge us5a_1 us5a_2 us5a_3 r12 r13 r14;
@@ -503,9 +490,6 @@ coefficients.
 - La table 10 nous indique que les prévisions coincident à 99.2 % avec la réalité observée.
 On peut donc dire que le modèle est bien adaptée.
 */
-
-
-/*Question 2. */
 
 /*
 Suite à l'analyse faite à la question précédente, on en déduit que les variables à utiliser pour aboutir à un modèle convenable
